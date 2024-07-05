@@ -1,0 +1,38 @@
+import requests
+import json
+
+
+url_for_keyword = "https://sell.smartstore.naver.com/api/v2/data-statistics/search-inflow/channel-products?page=0&size=1000&storeNo=500002829"
+
+headers = {
+    "Cookie": '''NNB=JBPPEUXSZ6QGK; _fwb=1039RSiwfhiJtSTa06ULtKc.1705037901108; _fwb=82LY32daKJI0W5Pc10APtv.1712889925857; ASID=af714e7c0000018ed0342f1c00000049; NAC=YNgABMgLTMgx; nid_inf=775928533; NID_AUT=zScsKuVDlXXeHIXQuFwErRojrpzmpeytH7sfhqDsGNGKnddiRkWZWduDE+dcf3m8; NID_JKL=nBqu7du87QkHZ0NoAM9j0uDHdRk8dIUEQO1IOq+EQfo=; wcs_bt=34711e37c5e348:1719820772; NACT=1; NID_SES=AAABk0wzkJZVL7BaDgmmYaXPd0HnW+pT3dM6pHY+M8kKz6a+HSrVBXoykXzIPAfVrEMnW6fIvUxAIBlF/MDPfU15NOi4yGyNzzBMAnsuWyaGTb3lgLjWEYIOIsDv2hW2kkTnjwksw1AEw50PCid2c6MIh2h8DDwag79rjH2gRXpQFmzg3LIpF9pdbJIOVBYZoXZKdxV6O5wFEq4x/a5ZwYECVPalzNymQKh+/4WuaQJBxruRZJYkfJV7il6UCx0C3pscgf61cMhBJZUYnRF0BEuGD+TnDRDgxbn8CyOXIKNtSEi0SDb4T85psYtBGVx5AjrCSCf7lzN+x0k/ZcylfmHPzhXFWP3r6qs3gCxx7sp8GQ2V4wHVhIYSR12gUGTjQe2jerQhUdIR8DALfM6yRBzJJULGydPW+Hw9/Q+ADMLx7Hm7nPquNggwl9Mwe3POcXD1dJ9saoQ2cCiDaJshGhQujAcaYXE8EIfno1gVIdyswJO8lL1MqE4g408wLbKQ3eiWiuenolvQjUWShYagyaXS44ywzvFLwH3eI2JOj4ZxYFae; _naver_usersession_=AFcOglqTf73NQhDMzoswUFDR; page_uid=ioOJvlqVN8wsslx/iNossssstDw-464912; CBI_SES=1QOdzzbf3TjVCBfb691khQfp0IsrRw1y9JgR6lOMQWF+brrDHEOe4btk659zna+u38SFjXrU7C9OcbvOCDFT8U0wE01lL7PD5dX34r8gI8/oxeto9F8CTr6JxhBKU6bl30OB+ruTA49p40sDV02gMlcwxSoYOj+MhlC3a/OaJrm2mngITii5JKxXQ/xSS8om2UpaMds1g8krdtSdtzGDEfEkJMIhpYl4L0L+zvNqGcvqqNogYA3MmT7Y3ViZskp/UwaLNACyeHogohUuYIPqcTFwvaLV4ba/ijYXEOeAtLcCdk+Cu7QSVlWhfDIDWDq/JgOxsLFmMB3vwQczfdigfduvdOK+a+AD4lzb7UC6exQhTlhyMCCDUYDr0HhKH+SUc18/6M4Tdv2YYnTgIKyIQBK87PQTqoGcyyPOnDcVBnHQD7M4BbKVY3hjEg9PdiuQgqvp8L5GACIfPrnbg+p7UhywDCcu9Me/jWo8fVZmPrM=; CBI_CHK="r5V0mf9uRUZHZ/vmLGy3ez7f4/k4aqWXL5o03eN68fpqZZLpIEs1qt4ildffqVNRc2gN6sG1yM1a9PsXK3YOu/TXlyfZYr74Ap+f0j0RBrUO3D0Hwxe0s4DE6YYv3mRsiHO+55qK3elFymvAoTE2BeMfDwa0zUg1NZcJyEFSYgQ="; NSI=GrVYR2XTivPh06U1XZBSrB30SJBsReWc6PBo3x5s; BUC=suoxdHVOzLgMwGkD6RXMrg09aCyC7rCK62oRG7xpp3E='''
+}
+
+response = requests.get(url_for_keyword, headers=headers)
+
+if response.status_code == 200:
+    print("GET request successful!")
+    print("Response body:")
+    print("Formatted response:")
+    list_keywords = response.json()['contents']['productSearchInflowStats']
+    keywords = []
+    for l in list_keywords:
+        keyword = l['channelProductNo']
+        keywords.append(keyword)
+    print(keywords)
+    data_list = []
+    for k in keywords: 
+        url = "https://sell.smartstore.naver.com/api/v2/data-statistics/search-inflow/channel-products/{}/keywords?channelNo=500002829&page=0&pageSize=500".format(k)
+        response = requests.get(url, headers=headers)
+        keyword_data = []
+        if response.status_code == 200:
+            list_keywords_data = response.json()['contents']
+            for l in list_keywords_data:
+                keyword = l['keyword']
+                inflow_count = l['inflowCount']
+                data_list.append([keyword, inflow_count])
+        else:
+            print("GET request failed with status code:", response.status_code)
+    print(data_list)
+else:
+    print("GET request failed with status code:", response.status_code)
